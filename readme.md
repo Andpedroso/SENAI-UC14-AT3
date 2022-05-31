@@ -101,7 +101,7 @@
 
 ---
 ## Funcionamento 🔮
-### O projeto apresenta basicamente 6 pastas para organizar a estrutura da API.
+### O projeto apresenta basicamente 6 pastas e um arquivo cs para configurar a estrutura da API.
 * context - codificação para a comunicação com o banco.
 ```
 using Microsoft.EntityFrameworkCore;
@@ -413,6 +413,91 @@ namespace SENAI_UC14_AT2.ViewModels
         public string Senha { get; set; }
     }
 }
+````
+* Program.cs
+> Contém configurações de inicialização da API.
+>> Program.cs configurado para este projeto:
+````
+using Microsoft.IdentityModel.Tokens;
+using SENAI_UC14_AT2.Contexts;
+using SENAI_UC14_AT2.Interfaces;
+using SENAI_UC14_AT2.Repositories;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", builder =>
+    {
+        builder.WithOrigins("http://localhost:3000")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultChallengeScheme = "JwtBearer";
+
+    options.DefaultAuthenticateScheme = "JwtBearer";
+
+}).AddJwtBearer("JwtBearer", options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+
+        ValidateAudience = true,
+
+        ValidateLifetime = true,
+
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("exoapi-chave-autenticacao")),
+
+        ClockSkew = TimeSpan.FromMinutes(60),
+
+        ValidIssuer = "exoapi.webapi",
+
+        ValidAudience = "exoapi.webapi"
+    };
+});
+
+builder.Services.AddScoped<ExoApiContext, ExoApiContext>();
+
+builder.Services.AddTransient<ProjetoRepository, ProjetoRepository>();
+
+builder.Services.AddTransient<IUsuarioRepository, UsuarioRepository>();
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
 ````
 ---
 ## Funcionalidades e recursos 🔮
