@@ -1,5 +1,5 @@
 # Documentação ExoApi
-### Desevolvimento de API Rest para o projeto ExoApi. A documentação apresenta funcionalidades e informações importantes para o desenvolvimento do sistema.
+### Desevolvimento de API Rest para o projeto ExoApi. A documentação apresenta funcionalidades e informações importantes para o desenvolvimento do sistema. A API foi desenvolvida com o Visual Studio.
 ---
 ## Objetivo 🔮
 ### O desenvovlimento da API tem como objetivo a comunicação entre sistemas. Para a ExoApi será o acesso ao banco de dados com informações de projetos realizados pela empresa.

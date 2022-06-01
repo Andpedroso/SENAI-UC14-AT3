@@ -8,18 +8,18 @@ CREATE TABLE Projetos (
     	Id INT PRIMARY KEY IDENTITY,
     	Titulo VARCHAR(150) UNIQUE NOT NULL,
     	StatusProjeto INT NOT NULL,
-	DataInicio DATE NOT NULL,
+	DataInicio VARCHAR(50) NOT NULL,
 	Requisitos VARCHAR(250) NOT NULL,
 	Area VARCHAR(200) NOT NULL
 )
 GO
 
 INSERT INTO Projetos (Titulo, StatusProjeto, DataInicio, Requisitos, Area) 
-VALUES ('DataCenter', 20, ‘2022-05-22’, '1.Guardar clientes(Nome, Idade, CPF e E-mail), 2.CRUD Completo.', 'Vendas')
+VALUES ('DataCenter', 20, '22/05/2022', '1.Guardar clientes(Nome, Idade, CPF e E-mail), 2.CRUD Completo.', 'Vendas')
 GO
 
 INSERT INTO Projetos (Titulo, StatusProjeto, DataInicio, Requisitos, Area) 
-VALUES ('InfoGames', 50, ‘2022-05-20’, '1.Guardar clientes(Nome, Idade, CPF e E-mail), 2.CRUD Completo.', 'Vendas')
+VALUES ('InfoGames', 50, '23/05/2022', '1.Guardar clientes(Nome, Idade, CPF e E-mail), 2.CRUD Completo.', 'Vendas')
 GO
 
 CREATE TABLE Usuarios (
