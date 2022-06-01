@@ -102,7 +102,9 @@
 ---
 ## Funcionamento 🔮
 ### O projeto apresenta basicamente 6 pastas e um arquivo cs para configurar a estrutura da API.
-* context - codificação para a comunicação com o banco.
+1. context
+> Codificação para vincular a API com o banco.
+>> ExoApiContext.cs
 ```
 using Microsoft.EntityFrameworkCore;
 using SENAI_UC14_AT2.Models;
@@ -136,7 +138,7 @@ namespace SENAI_UC14_AT2.Contexts
 }
 
 ```
-> esse é o bloco responsável pela configuração do banco:
+>>> esse é o bloco responsável pela configuração do banco:
 ```
 optionsBuilder.UseSqlServer(
                     "Data Source=DESKTOP-Q4INLOT\\SQLEXPRESS;" +
@@ -145,9 +147,9 @@ optionsBuilder.UseSqlServer(
                     "User Id=sa;" +
                     "Password=server");
 ```
-* controllers
+2. controllers
 > Onde vão conter os controladores, que vão configurar a comunicação com o cliente. Vai conter o tipo de requisição nos métodos. Também poderão ser adicionadas regras de acesso nos métodos.
->> exemplo de controller:
+>> ProjetoController.cs
 ```
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -275,15 +277,196 @@ namespace SENAI_UC14_AT2.Controllers
 }
 
 ```
->>> exemplo de requisição e regra de acesso no método:
+>> UsuariosController.cs
 ````
-        [Authorize(Roles = "1")]
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SENAI_UC14_AT2.Interfaces;
+using SENAI_UC14_AT2.Models;
+
+namespace SENAI_UC14_AT2.Controllers
+{
+    [Produces("application/json")]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsuariosController : ControllerBase
+    {
+        private readonly IUsuarioRepository _iUsuarioRepository;
+
+        public UsuariosController(IUsuarioRepository usuarioRepository)
+        {
+            _iUsuarioRepository = usuarioRepository;
+        }
+
+        [HttpGet]
+        public IActionResult Listar()
+        {
+            try
+            {
+                return Ok(_iUsuarioRepository.Listar());
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult BuscarPorId(int id)
+        {
+            try
+            {
+                Usuario usuarioEncontrado = _iUsuarioRepository.BuscarPorId(id);
+
+                if(usuarioEncontrado == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(usuarioEncontrado);
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Cadastrar(Usuario usuario)
+        {
+            try
+            {
+                _iUsuarioRepository.Cadastrar(usuario);
+
+                return StatusCode(201);
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Alterar(int id, Usuario usuario)
+        {
+            try
+            {
+                Usuario usuarioEncontrado = _iUsuarioRepository.BuscarPorId(id);
+
+                if (usuarioEncontrado == null)
+                {
+                    return NotFound();
+                }
+
+                _iUsuarioRepository.Atualizar(id, usuario);
+
+                return Ok("Usuario Alterado!");
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         [HttpDelete("{id}")]
-        public IActionResult Deletar(int id){}
+        public IActionResult Deletar(int id)
+        {
+            try
+            {
+                Usuario usuarioEncontrado = _iUsuarioRepository.BuscarPorId(id);
+
+                if (usuarioEncontrado == null)
+                {
+                    return NotFound();
+                }
+
+                _iUsuarioRepository.Deletar(id);
+
+                return Ok("Usuario Deletado!");
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
+}
 ````
-* interfaces
+>> LoginController.cs
+````
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using SENAI_UC14_AT2.Interfaces;
+using SENAI_UC14_AT2.Models;
+using SENAI_UC14_AT2.ViewModels;
+
+namespace SENAI_UC14_AT2.Controllers
+{
+    [Produces("application/json")]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class LoginController : ControllerBase
+    {
+        private readonly IUsuarioRepository _iUsuarioRepository;
+
+        public LoginController(IUsuarioRepository iUsuarioRepository)
+        {
+            _iUsuarioRepository = iUsuarioRepository;
+        }
+
+        [HttpPost]
+        public IActionResult Login(LoginViewModel login)
+        {
+            Usuario usuarioEncontrado = _iUsuarioRepository.Login(login.Email, login.Senha);
+
+            if(usuarioEncontrado == null)
+            {
+                return Unauthorized(new { msg = "E-mail e/ou senha inválidos" });
+            }
+
+            var minhasClaims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Email, usuarioEncontrado.Email),
+
+                new Claim(JwtRegisteredClaimNames.Jti, usuarioEncontrado.Id.ToString()),
+
+                new Claim(ClaimTypes.Role, usuarioEncontrado.Tipo)
+            };
+
+            var chave = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("exoapi-chave-autenticacao"));
+
+            var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
+
+            var meuToken = new JwtSecurityToken
+                (
+                    issuer: "exoapi.webapi",
+
+                    audience: "exoapi.webapi",
+
+                    claims: minhasClaims,
+
+                    expires: DateTime.Now.AddMinutes(60),
+
+                    signingCredentials: credenciais
+
+                );
+
+            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(meuToken) });
+        }
+    }
+}
+````
+3. interfaces
 > Definem a estrutura de uma classe, quando herdada, a classe deverá ter todos os métodos da interface.
->> exemplo de interface:
+>> IUsuarioRepository.cs
 ````
 using SENAI_UC14_AT2.Models;
 
@@ -306,9 +489,9 @@ namespace SENAI_UC14_AT2.Interfaces
 }
 
 ````
-* models
+4. models
 > São os modelos que representam a entidade definindo seus atributos onde vão ser postos os valores.
->> exemplo de model:
+>> Projeto.cs
 ````
 namespace SENAI_UC14_AT2.Models
 {
@@ -328,9 +511,25 @@ namespace SENAI_UC14_AT2.Models
     }
 }
 ````
-* repositories
+>> Usuario.cs
+````
+namespace SENAI_UC14_AT2.Models
+{
+    public class Usuario
+    {
+        public int Id { get; set; }
+
+        public string? Email { get; set; }
+
+        public string? Senha { get; set; }
+
+        public string? Tipo { get; set; }
+    }
+}
+````
+5. repositories
 > São configurações de acesso ao banco. Nele são definidos os métodos que vão possibiltar ações diretas no banco.
->> exemplo de repository:
+>> ProjetoRepository.cs
 ````
 using SENAI_UC14_AT2.Contexts;
 using SENAI_UC14_AT2.Models;
@@ -396,9 +595,77 @@ namespace SENAI_UC14_AT2.Repositories
     }
 }
 ````
-* viewModels
+>> UsuarioRepository.cs
+````
+using SENAI_UC14_AT2.Contexts;
+using SENAI_UC14_AT2.Interfaces;
+using SENAI_UC14_AT2.Models;
+
+namespace SENAI_UC14_AT2.Repositories
+{
+    public class UsuarioRepository : IUsuarioRepository
+    {
+        private readonly ExoApiContext _context;
+
+        public UsuarioRepository(ExoApiContext context)
+        {
+            _context = context;
+        }
+
+        public void Atualizar(int id, Usuario usuario)
+        {
+            Usuario usuarioEncontrado = _context.Usuarios.Find(id);
+
+            if(usuarioEncontrado != null)
+            {
+                usuarioEncontrado.Email = usuario.Email;
+
+                usuarioEncontrado.Senha = usuario.Senha;
+
+                usuarioEncontrado.Tipo = usuario.Tipo;
+
+                _context.Usuarios.Update(usuarioEncontrado);
+
+                _context.SaveChanges();
+            }
+        }
+
+        public Usuario BuscarPorId(int id)
+        {
+            return _context.Usuarios.Find(id);
+        }
+
+        public void Cadastrar(Usuario usuario)
+        {
+            _context.Usuarios.Add(usuario);
+
+            _context.SaveChanges();
+        }
+
+        public void Deletar(int id)
+        {
+            Usuario usuarioEncontrado = _context.Usuarios.Find(id);
+
+            _context.Usuarios.Remove(usuarioEncontrado);
+
+            _context.SaveChanges();
+        }
+
+        public List<Usuario> Listar()
+        {
+            return _context.Usuarios.ToList();
+        }
+
+        public Usuario Login(string email, string senha)
+        {
+            return _context.Usuarios.FirstOrDefault(x => x.Email == email && x.Senha == senha);
+        }
+    }
+}
+````
+6. viewModels
 > Permite a configuração de um modelo para sua view. No projeto foi criado para o login.
->> exemplo de viewmodel:
+>> LoginViewModel.cs
 ````
 using System.ComponentModel.DataAnnotations;
 
@@ -414,9 +681,9 @@ namespace SENAI_UC14_AT2.ViewModels
     }
 }
 ````
-* Program.cs
+7. Program.cs
 > Contém configurações de inicialização da API.
->> Program.cs configurado para este projeto:
+>> Program.cs
 ````
 using Microsoft.IdentityModel.Tokens;
 using SENAI_UC14_AT2.Contexts;
@@ -575,7 +842,7 @@ server: Kestrel
 ````
 >> Método no Repository
 ````
-public void Atualizar(int id, Usuario usuario)
+        public void Atualizar(int id, Usuario usuario)
         {
             Usuario usuarioEncontrado = _context.Usuarios.Find(id);
 
@@ -738,7 +1005,7 @@ public void Atualizar(int id, Usuario usuario)
 ````
 >> Método no Repository
 ````
-public void Deletar(int id)
+        public void Deletar(int id)
         {
             Usuario usuarioEncontrado = _context.Usuarios.Find(id);
 
