@@ -102,6 +102,16 @@
 ---
 ## Funcionamento 🔮
 ### O projeto apresenta basicamente 6 pastas e um arquivo cs para configurar a estrutura da API.
+* Extensões necessárias:
+````
+> Criação do projeto - API Web do ASP.NET Core
+
+> Swashbucle.AspNetCore
+
+> Microsoft.AspNetCore.Authentication.JwtBearer
+
+> Microsoft.EntityFrameworkCore.Sqlserver
+````
 1. context
 > Codificação para vincular a API com o banco.
 >> ExoApiContext.cs
