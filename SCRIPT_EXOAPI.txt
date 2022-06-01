@@ -1,0 +1,37 @@
+CREATE DATABASE ExoApi
+GO
+
+USE ExoApi
+GO
+
+CREATE TABLE Projetos (
+    	Id INT PRIMARY KEY IDENTITY,
+    	Titulo VARCHAR(150) UNIQUE NOT NULL,
+    	StatusProjeto INT NOT NULL,
+	DataInicio DATE NOT NULL,
+	Requisitos VARCHAR(250) NOT NULL,
+	Area VARCHAR(200) NOT NULL
+)
+GO
+
+INSERT INTO Projetos (Titulo, StatusProjeto, DataInicio, Requisitos, Area) 
+VALUES ('DataCenter', 20, ‘2022-05-22’, '1.Guardar clientes(Nome, Idade, CPF e E-mail), 2.CRUD Completo.', 'Vendas')
+GO
+
+INSERT INTO Projetos (Titulo, StatusProjeto, DataInicio, Requisitos, Area) 
+VALUES ('InfoGames', 50, ‘2022-05-20’, '1.Guardar clientes(Nome, Idade, CPF e E-mail), 2.CRUD Completo.', 'Vendas')
+GO
+
+CREATE TABLE Usuarios (
+    Id INT PRIMARY KEY IDENTITY,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    Senha VARCHAR(120) NOT NULL,
+	Tipo CHAR(1) NOT NULL
+)
+GO
+
+INSERT INTO Usuarios VALUES ('email@sp.br', '1234', '0')
+GO
+
+INSERT INTO Usuarios VALUES ('email2@sp.br', '1234', '1')
+GO
